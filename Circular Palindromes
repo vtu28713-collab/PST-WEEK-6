@@ -1,0 +1,73 @@
+import java.io.*;
+import java.util.*;
+
+public class Solution {
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String line = br.readLine();
+        if (line == null || line.trim().isEmpty()) return;
+
+        int n = Integer.parseInt(line.trim());
+        String s = br.readLine().trim();
+
+        if (n == 0) return;
+
+        // Concatenate string to cover circular shifts
+        String doubled = s + s;
+        int m = doubled.length();
+
+        // Transform string for Manacher's Algorithm
+        StringBuilder sb = new StringBuilder("#");
+        for (int i = 0; i < m; i++) {
+            sb.append(doubled.charAt(i)).append("#");
+        }
+        char[] t = sb.toString().toCharArray();
+        int tLen = t.length;
+        int[] p = new int[tLen];
+
+        int c = 0, r = 0;
+        for (int i = 0; i < tLen; i++) {
+            int iMir = 2 * c - i;
+            if (r > i) {
+                p[i] = Math.min(r - i, p[iMir]);
+            }
+            while (i - 1 - p[i] >= 0 && i + 1 + p[i] < tLen && t[i - 1 - p[i]] == t[i + 1 + p[i]]) {
+                p[i]++;
+            }
+            if (i + p[i] > r) {
+                c = i;
+                r = i + p[i];
+            }
+        }
+
+        int[] ans = new int[n];
+
+        // Process each shift k from 0 to n-1
+        for (int k = 0; k < n; k++) {
+            int maxPal = 0;
+            int winStart = 2 * k;
+            int winEnd = winStart + 2 * n;
+
+            for (int i = winStart; i <= winEnd; i++) {
+                int rad = p[i];
+                if (rad == 0) continue;
+
+                int distToStart = i - winStart;
+                int distToEnd = winEnd - i;
+                int effRad = Math.min(rad, Math.min(distToStart, distToEnd));
+
+                if (effRad > maxPal) {
+                    maxPal = effRad;
+                }
+            }
+            ans[k] = maxPal;
+        }
+
+        StringBuilder out = new StringBuilder();
+        for (int k = 0; k < n; k++) {
+            out.append(ans[k]).append("\n");
+        }
+        System.out.print(out);
+    }
+}
